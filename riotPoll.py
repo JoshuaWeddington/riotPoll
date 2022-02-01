@@ -11,6 +11,7 @@ import requests
 import pandas as pd
 import numpy as np
 import time
+import datetime
 
 key = apiKeys.key
 
@@ -77,5 +78,9 @@ for i in range(len(matchIDs)):
         parsedTimeline = parsedTimeline.fillna(True)
     else:
         parsedTimeline = parsedTimeline.fillna(False)
-    matchInfo = matchInfo.append(parsedTimeline)
+    matchInfo = matchInfo.append(parsedTimeline, ignore_index = True)
+    if (i % 5 == 0):
+        #print("Matches processed: " + str(100*(i/len(matchIDs))) + "%")
+        timeRemaining = (len(matchIDs) - i) * 1.5
+        print("Approximately " + str(datetime.timedelta(seconds = timeRemaining)) + " remaining.")
     time.sleep(1.5)
