@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Feb  1 09:18:16 2022
-
-@author: msustudent
-"""
-
-
 import apiKeys
 import requests
 import pandas as pd
