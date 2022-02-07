@@ -16,7 +16,7 @@ challengerIDs = challengers["summonerId"]
 
 #Use summonerIDs to get puuids
 puuids = pd.DataFrame(columns = ['puuid'])
-for i in range(len(challengerIDs)):
+for i in range(1):
     rawRequest = requests.get(
         "https://na1.api.riotgames.com/lol/summoner/v4/summoners/" + challengerIDs[i] + "?api_key=" + key)
     rawRequest = rawRequest.json()
@@ -41,6 +41,18 @@ for i in range(len(puuids)):
 matchIDs = matchIDs.drop_duplicates()
 matchIDs = matchIDs.reset_index(drop = True)
 
+def parseEvents(events, parsedTimeline):
+    team1Count = 0
+    team2Count = 0
+    for i in range(len(events)):
+        tempEvent = events[i]
+        for j in range(len(tempEvent)):
+            indEvent = tempEvent[j]
+            if (indEvent["type"] == "ELITE_MONSTER_KILL" and indEvent["monsterType"] == "DRAGON" and indEvent["killerTeamId"] == 100):
+                team1Count = team1Count + 1
+            elif (indEvent["type"] == "ELITE_MONSTER_KILL" and indEvent["monsterType"] == "DRAGON" and indEvent["killerTeamId"] == 200):
+                team2Count = team2Count + 1
+                
 #Parse each match for the spent gold, level based on the timestamp
 matchInfo = pd.DataFrame(columns = ['timestamp', 'p1.spentGold', 'p1.level', 'p2.spentGold', 'p2.level', 'p3.spentGold', 'p3.level', 'p4.spentGold', 'p4.level', 'p5.spentGold', 'p5.level', 'p6.spentGold', 'p6.level', 'p7.spentGold', 'p7.level', 'p8.spentGold', 'p8.level', 'p9.spentGold', 'p9.level', 'p10.spentGold', 'p10.level', 'team1Win'])
 events = pd.DataFrame()
@@ -52,7 +64,6 @@ for i in range(len(matchIDs)):
     timelineInfo = pd.json_normalize(timeline, record_path = ['info', 'frames'])
     timelineEvents = timelineInfo["events"]
     events = timelineEvents.append(timelineInfo["events"], ignore_index = True)
-    timelineInfo = timelineInfo.drop(["events"], axis = 1)
     parsedTimeline = timelineInfo['timestamp']
     winner = events.iloc[-1]
     winner = winner[-1]
