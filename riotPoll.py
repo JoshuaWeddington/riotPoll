@@ -99,27 +99,27 @@ def parseTurrets(events, parsedTimeline):
                 if (indEvent["type"] == "BUILDING_KILL" and indEvent["buildingType"] == "TOWER_BUILDING" and indEvent["teamId"] == 100):
                     tempTime = pd.Series(indEvent['timestamp'])
                     timestamps = timestamps.append(tempTime, ignore_index = True)
-                    team1Count = team1Count + 1
-                    timeIndex = (indEvent['timestamp'] // 60000) + 1
-                    parsedTimeline.loc[timeIndex, 'team1Turrets'] = team1Count
-                if (indEvent["type"] == "BUILDING_KILL" and indEvent["buildingType"] == "TOWER_BUILDING" and indEvent["teamId"] == 200):
-                    tempTime = pd.Series(indEvent['timestamp'])
-                    timestamps = timestamps.append(tempTime, ignore_index = True)
                     team2Count = team2Count + 1
                     timeIndex = (indEvent['timestamp'] // 60000) + 1
                     parsedTimeline.loc[timeIndex, 'team2Turrets'] = team2Count
+                if (indEvent["type"] == "BUILDING_KILL" and indEvent["buildingType"] == "TOWER_BUILDING" and indEvent["teamId"] == 200):
+                    tempTime = pd.Series(indEvent['timestamp'])
+                    timestamps = timestamps.append(tempTime, ignore_index = True)
+                    team1Count = team1Count + 1
+                    timeIndex = (indEvent['timestamp'] // 60000) + 1
+                    parsedTimeline.loc[timeIndex, 'team1Turrets'] = team1Count
             if ((indEvent['timestamp'] not in timestamps.values)) and (indEvent["type"] == "BUILDING_KILL" and indEvent["buildingType"] == "TOWER_BUILDING" and indEvent["teamId"] == 100):
-                tempTime = pd.Series(indEvent['timestamp'])
-                timestamps = timestamps.append(tempTime, ignore_index = True)
-                team1Count = team1Count + 1
-                timeIndex = (indEvent['timestamp'] // 60000) + 1
-                parsedTimeline.loc[timeIndex, 'team1Turrets'] = team1Count
-            if ((indEvent['timestamp'] not in timestamps.values)) and (indEvent["type"] == "BUILDING_KILL" and indEvent["buildingType"] == "TOWER_BUILDING" and indEvent["teamId"] == 200):
                 tempTime = pd.Series(indEvent['timestamp'])
                 timestamps = timestamps.append(tempTime, ignore_index = True)
                 team2Count = team2Count + 1
                 timeIndex = (indEvent['timestamp'] // 60000) + 1
                 parsedTimeline.loc[timeIndex, 'team2Turrets'] = team2Count
+            if ((indEvent['timestamp'] not in timestamps.values)) and (indEvent["type"] == "BUILDING_KILL" and indEvent["buildingType"] == "TOWER_BUILDING" and indEvent["teamId"] == 200):
+                tempTime = pd.Series(indEvent['timestamp'])
+                timestamps = timestamps.append(tempTime, ignore_index = True)
+                team1Count = team1Count + 1
+                timeIndex = (indEvent['timestamp'] // 60000) + 1
+                parsedTimeline.loc[timeIndex, 'team1Turrets'] = team1Count
             
     parsedTimeline['team1Turrets'] = parsedTimeline['team1Turrets'].ffill(axis = 0)
     parsedTimeline['team2Turrets'] = parsedTimeline['team2Turrets'].ffill(axis = 0)
@@ -127,7 +127,7 @@ def parseTurrets(events, parsedTimeline):
     return parsedTimeline
                 
 #Parse each match for the spent gold, level based on the timestamp
-matchInfo = pd.DataFrame(columns = ['timestamp', 'p1.spentGold', 'p1.level', 'p2.spentGold', 'p2.level', 'p3.spentGold', 'p3.level', 'p4.spentGold', 'p4.level', 'p5.spentGold', 'p5.level', 'p6.spentGold', 'p6.level', 'p7.spentGold', 'p7.level', 'p8.spentGold', 'p8.level', 'p9.spentGold', 'p9.level', 'p10.spentGold', 'p10.level', 'team1Dragons', 'team2Dragons', 'team1Win'])
+matchInfo = pd.DataFrame(columns = ['timestamp', 'p1.spentGold', 'p1.level', 'p2.spentGold', 'p2.level', 'p3.spentGold', 'p3.level', 'p4.spentGold', 'p4.level', 'p5.spentGold', 'p5.level', 'p6.spentGold', 'p6.level', 'p7.spentGold', 'p7.level', 'p8.spentGold', 'p8.level', 'p9.spentGold', 'p9.level', 'p10.spentGold', 'p10.level', 'team1Dragons', 'team2Dragons', 'team1Turrets', 'team2Turrets', 'team1Win'])
 events = pd.DataFrame()
 i = 0
 for i in range(len(matchIDs)):
