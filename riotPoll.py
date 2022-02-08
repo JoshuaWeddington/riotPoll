@@ -41,20 +41,50 @@ for i in range(len(puuids)):
 matchIDs = matchIDs.drop_duplicates()
 matchIDs = matchIDs.reset_index(drop = True)
 
-def parseEvents(events, parsedTimeline):
+def parseDragons(events, parsedTimeline):
     team1Count = 0
     team2Count = 0
+    parsedTimeline['team1Dragons'] = np.nan
+    parsedTimeline['team2Dragons'] = np.nan
+    timestamps = pd.DataFrame()
     for i in range(len(events)):
         tempEvent = events[i]
         for j in range(len(tempEvent)):
             indEvent = tempEvent[j]
-            if (indEvent["type"] == "ELITE_MONSTER_KILL" and indEvent["monsterType"] == "DRAGON" and indEvent["killerTeamId"] == 100):
+            #attempts to generalize the rectification of double counting events
+            if len(timestamps) == 0:
+                if (indEvent["type"] == "ELITE_MONSTER_KILL" and indEvent["monsterType"] == "DRAGON" and indEvent["killerTeamId"] == 100):
+                    tempTime = pd.Series(indEvent['timestamp'])
+                    timestamps = timestamps.append(tempTime, ignore_index = True)
+                    team1Count = team1Count + 1
+                    timeIndex = (indEvent['timestamp'] // 60000) + 1
+                    parsedTimeline.loc[timeIndex, 'team1Dragons'] = team1Count
+                if (indEvent["type"] == "ELITE_MONSTER_KILL" and indEvent["monsterType"] == "DRAGON" and indEvent["killerTeamId"] == 200):
+                    tempTime = pd.Series(indEvent['timestamp'])
+                    timestamps = timestamps.append(tempTime, ignore_index = True)
+                    team2Count = team2Count + 1
+                    timeIndex = (indEvent['timestamp'] // 60000) + 1
+                    parsedTimeline.loc[timeIndex, 'team2Dragons'] = team2Count
+            if ((indEvent['timestamp'] not in timestamps.values)) and (indEvent["type"] == "ELITE_MONSTER_KILL" and indEvent["monsterType"] == "DRAGON" and indEvent["killerTeamId"] == 100):
+                tempTime = pd.Series(indEvent['timestamp'])
+                timestamps = timestamps.append(tempTime, ignore_index = True)
                 team1Count = team1Count + 1
-            elif (indEvent["type"] == "ELITE_MONSTER_KILL" and indEvent["monsterType"] == "DRAGON" and indEvent["killerTeamId"] == 200):
+                timeIndex = (indEvent['timestamp'] // 60000) + 1
+                parsedTimeline.loc[timeIndex, 'team1Dragons'] = team1Count
+            if ((indEvent['timestamp'] not in timestamps.values)) and (indEvent["type"] == "ELITE_MONSTER_KILL" and indEvent["monsterType"] == "DRAGON" and indEvent["killerTeamId"] == 200):
+                tempTime = pd.Series(indEvent['timestamp'])
+                timestamps = timestamps.append(tempTime, ignore_index = True)
                 team2Count = team2Count + 1
+                timeIndex = (indEvent['timestamp'] // 60000) + 1
+                parsedTimeline.loc[timeIndex, 'team2Dragons'] = team2Count
+            
+    parsedTimeline['team1Dragons'] = parsedTimeline['team1Dragons'].ffill(axis = 0)
+    parsedTimeline['team2Dragons'] = parsedTimeline['team2Dragons'].ffill(axis = 0)
+    parsedTimeline = parsedTimeline.fillna(0)
+    return parsedTimeline
                 
 #Parse each match for the spent gold, level based on the timestamp
-matchInfo = pd.DataFrame(columns = ['timestamp', 'p1.spentGold', 'p1.level', 'p2.spentGold', 'p2.level', 'p3.spentGold', 'p3.level', 'p4.spentGold', 'p4.level', 'p5.spentGold', 'p5.level', 'p6.spentGold', 'p6.level', 'p7.spentGold', 'p7.level', 'p8.spentGold', 'p8.level', 'p9.spentGold', 'p9.level', 'p10.spentGold', 'p10.level', 'team1Win'])
+matchInfo = pd.DataFrame(columns = ['timestamp', 'p1.spentGold', 'p1.level', 'p2.spentGold', 'p2.level', 'p3.spentGold', 'p3.level', 'p4.spentGold', 'p4.level', 'p5.spentGold', 'p5.level', 'p6.spentGold', 'p6.level', 'p7.spentGold', 'p7.level', 'p8.spentGold', 'p8.level', 'p9.spentGold', 'p9.level', 'p10.spentGold', 'p10.level', 'team1Dragons', 'team2Dragons', 'team1Win'])
 events = pd.DataFrame()
 i = 0
 for i in range(len(matchIDs)):
@@ -76,6 +106,7 @@ for i in range(len(matchIDs)):
         timelineLevel = timelineLevel.rename('p' + str(j) + '.level', axis = 'columns')
         participantGroup = pd.concat([timelineSpent, timelineLevel], axis = 1)
         parsedTimeline = pd.concat([parsedTimeline, participantGroup], axis = 1)
+    parsedTimeline = parseDragons(events, parsedTimeline)
     parsedTimeline['team1Win'] = np.nan
     if (winner == 100):
         parsedTimeline = parsedTimeline.fillna(True)
