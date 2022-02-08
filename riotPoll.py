@@ -84,6 +84,7 @@ def parseDragons(events, parsedTimeline):
     return parsedTimeline
 
 def parseTurrets(events, parsedTimeline):
+    #Must flip these values
     team1Count = 0
     team2Count = 0
     parsedTimeline['team1Turrets'] = np.nan
