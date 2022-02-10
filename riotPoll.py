@@ -4,23 +4,32 @@ import pandas as pd
 import numpy as np
 import time
 import datetime
+import sys
 
-key = constants.key
 
+if constants.key == "-- Insert Key Here --":
+    sys.exit("Key not changed, insert proper key")
+else:
+    key = constants.key
+
+combinedIDs = pd.DataFrame(columns = ["summonerId"])
 #Get challengers and parse for their summonerIDs
-challengers = requests.get(
-    "https://na1.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/RANKED_SOLO_5x5?api_key=" + key)
-challengers = challengers.json()
-challengers = pd.DataFrame.from_dict(challengers["entries"])
-challengerIDs = challengers["summonerId"]
-combinedIDs = challengerIDs
-time.sleep(1.5)
+def getChallengers(combinedIDs):
+    challengers = requests.get(
+        "https://na1.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/RANKED_SOLO_5x5?api_key=" + key)
+    challengers = challengers.json()
+    challengers = pd.DataFrame.from_dict(challengers["entries"])
+    challengerIDs = pd.DataFrame(challengers["summonerId"])
+    combinedIDs = combinedIDs.append(challengerIDs)
+    time.sleep(1.5)
+    print("Challengers done")
+    return combinedIDs
 
 def getGM(combinedIDs):
     grandmasters = requests.get("https://na1.api.riotgames.com/lol/league/v4/grandmasterleagues/by-queue/RANKED_SOLO_5x5?api_key=" + key)
     grandmasters = grandmasters.json()
     grandmasters = pd.DataFrame.from_dict(grandmasters["entries"])
-    grandmasterIDs = grandmasters["summonerId"]
+    grandmasterIDs = pd.DataFrame(grandmasters["summonerId"])
     combinedIDs = combinedIDs.append(grandmasterIDs, ignore_index = True)
     time.sleep(1.5)
     print("Grandmasters done")
@@ -30,7 +39,7 @@ def getMasters(combinedIDs):
     masters = requests.get("https://na1.api.riotgames.com/lol/league/v4/masterleagues/by-queue/RANKED_SOLO_5x5?api_key=" + key)
     masters = masters.json()
     masters = pd.DataFrame.from_dict(masters["entries"])
-    masterIDs = masters["summonerId"]
+    masterIDs = pd.DataFrane(masters["summonerId"])
     combinedIDs = combinedIDs.append(masterIDs, ignore_index = True)
     time.sleep(1.5)
     print("Masters done")
@@ -51,15 +60,20 @@ def getPlatAndDiamond(combinedIDs):
                 print(ranks[i] + " " + divisions[j] + " page " + str(k) + " done")
     return combinedIDs
 
-combinedIDs = getGM(combinedIDs)
-combinedIDs = getMasters(combinedIDs)
-combinedIDs = getPlatAndDiamond(combinedIDs)
+if constants.queryChallengers:
+    combinedIDs = getChallengers(combinedIDs)
+if constants.queryGrandmasters:
+    combinedIDs = getGM(combinedIDs)
+if constants.queryMasters:
+    combinedIDs = getMasters(combinedIDs)
+if constants.queryPlatDiamond:
+    combinedIDs = getPlatAndDiamond(combinedIDs)
 
 #Use summonerIDs to get puuids
 puuids = pd.DataFrame(columns = ['puuid'])
 for i in range(len(combinedIDs)):
-    rawRequest = requests.get(
-        "https://na1.api.riotgames.com/lol/summoner/v4/summoners/" + combinedIDs[i] + "?api_key=" + key)
+    requestURL = ("https://na1.api.riotgames.com/lol/summoner/v4/summoners/" + combinedIDs.iloc[i] + "?api_key=" + key)
+    rawRequest = requests.get(requestURL['summonerId'])
     rawRequest = rawRequest.json()
     puuid = rawRequest["puuid"]
     puuids.loc[i] = puuid
