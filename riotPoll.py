@@ -1,11 +1,11 @@
-import apiKeys
+import constants
 import requests
 import pandas as pd
 import numpy as np
 import time
 import datetime
 
-key = apiKeys.key
+key = constants.key
 
 #Get challengers and parse for their summonerIDs
 challengers = requests.get(
@@ -13,12 +13,53 @@ challengers = requests.get(
 challengers = challengers.json()
 challengers = pd.DataFrame.from_dict(challengers["entries"])
 challengerIDs = challengers["summonerId"]
+combinedIDs = challengerIDs
+time.sleep(1.5)
+
+def getGM(combinedIDs):
+    grandmasters = requests.get("https://na1.api.riotgames.com/lol/league/v4/grandmasterleagues/by-queue/RANKED_SOLO_5x5?api_key=" + key)
+    grandmasters = grandmasters.json()
+    grandmasters = pd.DataFrame.from_dict(grandmasters["entries"])
+    grandmasterIDs = grandmasters["summonerId"]
+    combinedIDs = combinedIDs.append(grandmasterIDs, ignore_index = True)
+    time.sleep(1.5)
+    print("Grandmasters done")
+    return combinedIDs
+
+def getMasters(combinedIDs):
+    masters = requests.get("https://na1.api.riotgames.com/lol/league/v4/masterleagues/by-queue/RANKED_SOLO_5x5?api_key=" + key)
+    masters = masters.json()
+    masters = pd.DataFrame.from_dict(masters["entries"])
+    masterIDs = masters["summonerId"]
+    combinedIDs = combinedIDs.append(masterIDs, ignore_index = True)
+    time.sleep(1.5)
+    print("Masters done")
+    return combinedIDs
+
+def getPlatAndDiamond(combinedIDs):
+    ranks = ['DIAMOND', 'PLATINUM']
+    divisions = ['I', 'II', 'III', 'IV']
+    for i in range(len(ranks)):
+        for j in range(len(divisions)):
+            for k in range(1, 4):
+                currentPage = requests.get("https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/" + ranks[i] + "/" + divisions[j] +"?page=" + str(k) + "&api_key=" + key)
+                currentPage = currentPage.json()
+                currentPage = pd.DataFrame.from_dict(currentPage)
+                currentPageIDs = currentPage["summonerId"]
+                combinedIDs = combinedIDs.append(currentPageIDs, ignore_index = True)
+                time.sleep(1.5)
+                print(ranks[i] + " " + divisions[j] + " page " + str(k) + " done")
+    return combinedIDs
+
+combinedIDs = getGM(combinedIDs)
+combinedIDs = getMasters(combinedIDs)
+combinedIDs = getPlatAndDiamond(combinedIDs)
 
 #Use summonerIDs to get puuids
 puuids = pd.DataFrame(columns = ['puuid'])
-for i in range(1):
+for i in range(len(combinedIDs)):
     rawRequest = requests.get(
-        "https://na1.api.riotgames.com/lol/summoner/v4/summoners/" + challengerIDs[i] + "?api_key=" + key)
+        "https://na1.api.riotgames.com/lol/summoner/v4/summoners/" + combinedIDs[i] + "?api_key=" + key)
     rawRequest = rawRequest.json()
     puuid = rawRequest["puuid"]
     puuids.loc[i] = puuid
@@ -158,7 +199,7 @@ for i in range(len(matchIDs)):
         parsedTimeline = parsedTimeline.fillna(False)
     matchInfo = matchInfo.append(parsedTimeline, ignore_index = True)
     if (i % 5 == 0):
-        #print("Matches processed: " + str(100*(i/len(matchIDs))) + "%")
+        print("Matches processed: " + str(100*(i/len(matchIDs))) + "%")
         timeRemaining = (len(matchIDs) - i) * 1.5
-        print("Approximately " + str(datetime.timedelta(seconds = timeRemaining)) + " remaining.")
+        print("     Approximately " + str(datetime.timedelta(seconds = timeRemaining)) + " remaining.")
     time.sleep(1.5)
