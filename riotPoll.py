@@ -71,7 +71,7 @@ if constants.queryPlatDiamond:
 
 #Use summonerIDs to get puuids
 puuids = pd.DataFrame(columns = ['puuid'])
-for i in range(len(combinedIDs)):
+for i in range(10):
     requestURL = ("https://na1.api.riotgames.com/lol/summoner/v4/summoners/" + combinedIDs.iloc[i] + "?api_key=" + key)
     rawRequest = requests.get(requestURL['summonerId'])
     rawRequest = rawRequest.json()
@@ -211,6 +211,8 @@ for i in range(len(matchIDs)):
         parsedTimeline = parsedTimeline.fillna(True)
     else:
         parsedTimeline = parsedTimeline.fillna(False)
+        
+    parsedTimeline = parsedTimeline.drop(parsedTimeline.index[range(5)])
     matchInfo = matchInfo.append(parsedTimeline, ignore_index = True)
     if (i % 5 == 0):
         print("Matches processed: " + str(100*(i/len(matchIDs))) + "%")

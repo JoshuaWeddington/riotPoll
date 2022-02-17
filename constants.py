@@ -1,12 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Feb 10 09:24:07 2022
-
-@author: msustudent
-"""
-
-
-key = "-- Insert Key Here --"
+key = "RGAPI-5eca3841-f878-42eb-8146-63ab582c3e69"
 queryChallengers = True
 queryGrandmasters = False
 queryMasters = False
