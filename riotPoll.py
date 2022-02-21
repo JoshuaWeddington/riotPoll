@@ -39,7 +39,7 @@ def getMasters(combinedIDs):
     masters = requests.get("https://na1.api.riotgames.com/lol/league/v4/masterleagues/by-queue/RANKED_SOLO_5x5?api_key=" + key)
     masters = masters.json()
     masters = pd.DataFrame.from_dict(masters["entries"])
-    masterIDs = pd.DataFrane(masters["summonerId"])
+    masterIDs = pd.DataFrame(masters["summonerId"])
     combinedIDs = combinedIDs.append(masterIDs, ignore_index = True)
     time.sleep(1.5)
     print("Masters done")
@@ -54,7 +54,7 @@ def getPlatAndDiamond(combinedIDs):
                 currentPage = requests.get("https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/" + ranks[i] + "/" + divisions[j] +"?page=" + str(k) + "&api_key=" + key)
                 currentPage = currentPage.json()
                 currentPage = pd.DataFrame.from_dict(currentPage)
-                currentPageIDs = currentPage["summonerId"]
+                currentPageIDs = pd.DataFrame(currentPage["summonerId"])
                 combinedIDs = combinedIDs.append(currentPageIDs, ignore_index = True)
                 time.sleep(1.5)
                 print(ranks[i] + " " + divisions[j] + " page " + str(k) + " done")
