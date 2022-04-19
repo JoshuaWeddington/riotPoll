@@ -6,7 +6,7 @@ import time
 import datetime
 import sys
 
-
+waitTime = 0.85
 if constants.key == "-- Insert Key Here --":
     sys.exit("Key not changed, insert proper key")
 else:
@@ -21,7 +21,7 @@ def getChallengers(combinedIDs):
     challengers = pd.DataFrame.from_dict(challengers["entries"])
     challengerIDs = pd.DataFrame(challengers["summonerId"])
     combinedIDs = combinedIDs.append(challengerIDs)
-    time.sleep(1.5)
+    time.sleep(waitTime)
     print("Challengers done")
     return combinedIDs
 
@@ -31,7 +31,7 @@ def getGM(combinedIDs):
     grandmasters = pd.DataFrame.from_dict(grandmasters["entries"])
     grandmasterIDs = pd.DataFrame(grandmasters["summonerId"])
     combinedIDs = combinedIDs.append(grandmasterIDs, ignore_index = True)
-    time.sleep(1.5)
+    time.sleep(waitTime)
     print("Grandmasters done")
     return combinedIDs
 
@@ -41,7 +41,7 @@ def getMasters(combinedIDs):
     masters = pd.DataFrame.from_dict(masters["entries"])
     masterIDs = pd.DataFrame(masters["summonerId"])
     combinedIDs = combinedIDs.append(masterIDs, ignore_index = True)
-    time.sleep(1.5)
+    time.sleep(waitTime)
     print("Masters done")
     return combinedIDs
 
@@ -50,13 +50,13 @@ def getPlatAndDiamond(combinedIDs):
     divisions = ['I', 'II', 'III', 'IV']
     for i in range(len(ranks)):
         for j in range(len(divisions)):
-            for k in range(1, 4):
+            for k in range(1, 2):
                 currentPage = requests.get("https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/" + ranks[i] + "/" + divisions[j] +"?page=" + str(k) + "&api_key=" + key)
                 currentPage = currentPage.json()
                 currentPage = pd.DataFrame.from_dict(currentPage)
                 currentPageIDs = pd.DataFrame(currentPage["summonerId"])
                 combinedIDs = combinedIDs.append(currentPageIDs, ignore_index = True)
-                time.sleep(1.5)
+                time.sleep(waitTime)
                 print(ranks[i] + " " + divisions[j] + " page " + str(k) + " done")
     return combinedIDs
 
@@ -71,14 +71,18 @@ if constants.queryPlatDiamond:
 
 #Use summonerIDs to get puuids
 puuids = pd.DataFrame(columns = ['puuid'])
-for i in range(10):
+for i in range(len(combinedIDs)):
     requestURL = ("https://na1.api.riotgames.com/lol/summoner/v4/summoners/" + combinedIDs.iloc[i] + "?api_key=" + key)
     rawRequest = requests.get(requestURL['summonerId'])
+    if (not rawRequest):
+        print("Empty request at " + str(i))
+        time.sleep(waitTime)
+        continue
     rawRequest = rawRequest.json()
     puuid = rawRequest["puuid"]
     puuids.loc[i] = puuid
     print("puuid iteration: " + str(i))
-    time.sleep(1.5)
+    time.sleep(waitTime)
    
 #Use PUUIDs to get match IDs
 matchIDs = pd.DataFrame(columns = ['matchID'])
@@ -86,11 +90,15 @@ for i in range(len(puuids)):
     requestURL = ("https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/" + puuids.iloc[i] + "/ids?queue=420&start=0&count=20&api_key=" + key)
     matchRequest = requests.get(requestURL['puuid'])
     matchRequest = matchRequest.json()
+    if (not matchRequest):
+        print("Empty request at " + str(i))
+        time.sleep(waitTime)
+        continue
     matches = pd.DataFrame.from_dict(matchRequest)
     matches = matches.set_axis(['matchID'], axis = 1, inplace = False)
     matchIDs = matchIDs.append(matches, ignore_index = True)
     print("match iteration: " + str(i))
-    time.sleep(1.5)
+    time.sleep(waitTime)
    
 #Remove duplicates
 matchIDs = matchIDs.drop_duplicates()
@@ -184,10 +192,15 @@ def parseTurrets(events, parsedTimeline):
 #Parse each match for the spent gold, level based on the timestamp
 matchInfo = pd.DataFrame(columns = ['timestamp', 'p1.spentGold', 'p1.level', 'p2.spentGold', 'p2.level', 'p3.spentGold', 'p3.level', 'p4.spentGold', 'p4.level', 'p5.spentGold', 'p5.level', 'p6.spentGold', 'p6.level', 'p7.spentGold', 'p7.level', 'p8.spentGold', 'p8.level', 'p9.spentGold', 'p9.level', 'p10.spentGold', 'p10.level', 'team1Dragons', 'team2Dragons', 'team1Turrets', 'team2Turrets', 'team1Win'])
 events = pd.DataFrame()
+startTime = time.time()
 i = 0
 for i in range(len(matchIDs)):
     requestURL = ("https://americas.api.riotgames.com/lol/match/v5/matches/" + matchIDs.loc[i] + "/timeline?api_key=" + key)
     timelineRequest = requests.get(requestURL['matchID'])
+    if (not timelineRequest):
+        print("Empty request at " + str(i))
+        time.sleep(waitTime)
+        continue
     timeline = timelineRequest.json()
     timelineInfo = pd.json_normalize(timeline, record_path = ['info', 'frames'])
     timelineEvents = timelineInfo["events"]
@@ -215,7 +228,9 @@ for i in range(len(matchIDs)):
     parsedTimeline = parsedTimeline.drop(parsedTimeline.index[range(5)])
     matchInfo = matchInfo.append(parsedTimeline, ignore_index = True)
     if (i % 5 == 0):
+        currentTime = time.time()
         print("Matches processed: " + str(100*(i/len(matchIDs))) + "%")
-        timeRemaining = (len(matchIDs) - i) * 1.5
+        timeRemaining = (len(matchIDs) - i) * waitTime
         print("     Approximately " + str(datetime.timedelta(seconds = timeRemaining)) + " remaining.")
-    time.sleep(1.5)
+        print("     Running for " + str(datetime.timedelta(seconds = (currentTime - startTime))))
+    time.sleep(waitTime)
