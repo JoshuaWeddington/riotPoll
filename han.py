@@ -14,8 +14,6 @@ xTrain, xTest, yTrain, yTest = train_test_split(x, y)
 model = Sequential()
 model.add(Dense(25, input_dim = 25, activation = 'relu'))
 model.add(Dense(25, activation = 'relu'))
-model.add(Dense(25, activation = 'relu'))
-model.add(Dense(25, activation = 'relu'))
 model.add(Dense(1, activation = 'sigmoid'))
 
 model.compile(loss = 'binary_crossentropy', optimizer = 'adam', metrics = ['accuracy'])
