@@ -1,5 +1,11 @@
-key = "-- Insert Key Here --"
-queryChallengers = True
-queryGrandmasters = True
-queryMasters = True
-queryPlatDiamond = True
+key = "RGAPI-5eca3841-f878-42eb-8146-63ab582c3e69"
+queryChallengers = False
+queryGrandmasters = False
+queryMasters = False
+queryPlatDiamond = False
+getHighPlat = False
+getLowPlat = False
+getHighGold = False
+getLowGold = False
+getHighSilver = True
+getLowSilver = False

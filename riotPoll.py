@@ -60,6 +60,96 @@ def getPlatAndDiamond(combinedIDs):
                 print(ranks[i] + " " + divisions[j] + " page " + str(k) + " done")
     return combinedIDs
 
+def getHighPlat(combinedIDs):
+    ranks = ['PLATINUM']
+    divisions = ['I', 'II']
+    for i in range(len(ranks)):
+        for j in range(len(divisions)):
+            for k in range(1, 2):
+                currentPage = requests.get("https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/" + ranks[i] + "/" + divisions[j] +"?page=" + str(k) + "&api_key=" + key)
+                currentPage = currentPage.json()
+                currentPage = pd.DataFrame.from_dict(currentPage)
+                currentPageIDs = pd.DataFrame(currentPage["summonerId"])
+                combinedIDs = combinedIDs.append(currentPageIDs, ignore_index = True)
+                time.sleep(waitTime)
+                print(ranks[i] + " " + divisions[j] + " page " + str(k) + " done")
+    return combinedIDs
+
+def getLowPlat(combinedIDs):
+    ranks = ['PLATINUM']
+    divisions = ['III', 'IV']
+    for i in range(len(ranks)):
+        for j in range(len(divisions)):
+            for k in range(1, 2):
+                currentPage = requests.get("https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/" + ranks[i] + "/" + divisions[j] +"?page=" + str(k) + "&api_key=" + key)
+                currentPage = currentPage.json()
+                currentPage = pd.DataFrame.from_dict(currentPage)
+                currentPageIDs = pd.DataFrame(currentPage["summonerId"])
+                combinedIDs = combinedIDs.append(currentPageIDs, ignore_index = True)
+                time.sleep(waitTime)
+                print(ranks[i] + " " + divisions[j] + " page " + str(k) + " done")
+    return combinedIDs
+
+def getHighGold(combinedIDs):
+    ranks = ['GOLD']
+    divisions = ['I', 'II']
+    for i in range(len(ranks)):
+        for j in range(len(divisions)):
+            for k in range(1, 2):
+                currentPage = requests.get("https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/" + ranks[i] + "/" + divisions[j] +"?page=" + str(k) + "&api_key=" + key)
+                currentPage = currentPage.json()
+                currentPage = pd.DataFrame.from_dict(currentPage)
+                currentPageIDs = pd.DataFrame(currentPage["summonerId"])
+                combinedIDs = combinedIDs.append(currentPageIDs, ignore_index = True)
+                time.sleep(waitTime)
+                print(ranks[i] + " " + divisions[j] + " page " + str(k) + " done")
+    return combinedIDs
+
+def getLowGold(combinedIDs):
+    ranks = ['GOLD']
+    divisions = ['III', 'IV']
+    for i in range(len(ranks)):
+        for j in range(len(divisions)):
+            for k in range(1, 2):
+                currentPage = requests.get("https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/" + ranks[i] + "/" + divisions[j] +"?page=" + str(k) + "&api_key=" + key)
+                currentPage = currentPage.json()
+                currentPage = pd.DataFrame.from_dict(currentPage)
+                currentPageIDs = pd.DataFrame(currentPage["summonerId"])
+                combinedIDs = combinedIDs.append(currentPageIDs, ignore_index = True)
+                time.sleep(waitTime)
+                print(ranks[i] + " " + divisions[j] + " page " + str(k) + " done")
+    return combinedIDs
+
+def getHighSilver(combinedIDs):
+    ranks = ['SILVER']
+    divisions = ['I', 'II']
+    for i in range(len(ranks)):
+        for j in range(len(divisions)):
+            for k in range(1, 2):
+                currentPage = requests.get("https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/" + ranks[i] + "/" + divisions[j] +"?page=" + str(k) + "&api_key=" + key)
+                currentPage = currentPage.json()
+                currentPage = pd.DataFrame.from_dict(currentPage)
+                currentPageIDs = pd.DataFrame(currentPage["summonerId"])
+                combinedIDs = combinedIDs.append(currentPageIDs, ignore_index = True)
+                time.sleep(waitTime)
+                print(ranks[i] + " " + divisions[j] + " page " + str(k) + " done")
+    return combinedIDs
+
+def getLowSilver(combinedIDs):
+    ranks = ['SILVER']
+    divisions = ['III', 'IV']
+    for i in range(len(ranks)):
+        for j in range(len(divisions)):
+            for k in range(1, 2):
+                currentPage = requests.get("https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/" + ranks[i] + "/" + divisions[j] +"?page=" + str(k) + "&api_key=" + key)
+                currentPage = currentPage.json()
+                currentPage = pd.DataFrame.from_dict(currentPage)
+                currentPageIDs = pd.DataFrame(currentPage["summonerId"])
+                combinedIDs = combinedIDs.append(currentPageIDs, ignore_index = True)
+                time.sleep(waitTime)
+                print(ranks[i] + " " + divisions[j] + " page " + str(k) + " done")
+    return combinedIDs
+
 if constants.queryChallengers:
     combinedIDs = getChallengers(combinedIDs)
 if constants.queryGrandmasters:
@@ -68,7 +158,19 @@ if constants.queryMasters:
     combinedIDs = getMasters(combinedIDs)
 if constants.queryPlatDiamond:
     combinedIDs = getPlatAndDiamond(combinedIDs)
-
+if constants.getHighPlat:
+    combinedIDs = getHighPlat(combinedIDs)
+if constants.getLowPlat:
+    combinedIDs = getLowPlat(combinedIDs)
+if constants.getHighGold:
+    combinedIDs = getHighGold(combinedIDs)
+if constants.getLowGold:
+    combinedIDs = getLowGold(combinedIDs)
+if constants.getHighSilver:
+    combinedIDs = getHighSilver(combinedIDs)
+if constants.getLowSilver:
+    combinedIDs = getLowSilver(combinedIDs)
+    
 #Use summonerIDs to get puuids
 puuids = pd.DataFrame(columns = ['puuid'])
 for i in range(len(combinedIDs)):
